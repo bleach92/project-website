@@ -1,0 +1,195 @@
+/* Define CSS variables for colors */
+:root {
+    --background-color: #121212; /* Dark background */
+    --fractal-color: #ff3333; /* Red fractals */
+    --text-color: #ffffff; /* White text color */
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* General Styles */
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    cursor: crosshair; /* Default cursor */
+  }
+  
+  /* Canvas Styles */
+  canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Place canvas behind other content */
+  }
+  
+  .canvasdiv {
+    overflow:scroll;
+  }
+  
+  /* Header Styles */
+  header {
+    background-color: #1f1f1f; /* Dark gray */
+    color: var(--text-color);
+    padding: 20px;
+    text-align: center;
+  }
+  
+  /* Main Styles */
+  main {
+    padding: 20px;
+  }
+  
+  /* Hero Section Styles */
+  #hero {
+    position: relative;
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+  
+  #hero img {
+    width: 25em;
+    height: 25em;
+    border-radius: 50%;
+    margin-bottom: 2.5em;
+  }
+  
+  #hero h3 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+  }
+  
+  #hero p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+  }
+  
+  /* About Me Section */
+#about {
+  text-align: center;
+  padding: 50px;
+  background-color: #1f1f1f; /* Light gray background */
+}
+
+#about h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+#about p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+}
+
+/* Projects Section */
+#projects {
+  padding: 50px;
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive grid layout */
+  gap: 20px; /* Spacing between project cards */
+}
+
+.project {
+  background-color: #1f1f1f; /* White background */
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Shadow effect */
+  padding: 5em;
+}
+
+.project img {
+  width: 100%;
+  height: auto;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.project h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.project p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.project a {
+  display: inline-block;
+  background-color: #ff3333; /* Red button background */
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.project a:hover {
+  background-color: #cc0000; /* Darker red on hover */
+}
+  
+  /* Contact Section Styles */
+  #contact {
+    padding: 50px 0;
+    scroll-snap-align: start;
+  }
+  
+  form {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  form label {
+    display: block;
+    margin-bottom: 10px;
+  }
+  
+  form input[type="text"],
+  form input[type="email"],
+  form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #333333; /* Dark gray border */
+    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: #333333; /* Dark gray background */
+    color: var(--text-color);
+  }
+  
+  form input[type="submit"] {
+    background-color: var(--fractal-color);
+    color: var(--text-color);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  form input[type="submit"]:hover {
+    background-color: #cc0000; /* Darker red on hover */
+  }
+  
+  /* Footer Section Styles */
+  footer {
+    background-color: #1f1f1f; /* Dark gray */
+    color: var(--text-color);
+    padding: 20px;
+    text-align: center;
+  }
+  

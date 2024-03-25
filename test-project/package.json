@@ -9,6 +9,15 @@
 		"test": " REGRESSION_TESTING=true npm start"
 	},
 	"dependencies": {
-		"express": "^4.16.1"
+		"body-parser": "^1.20.2",
+		"express": "^4.19.1",
+		"form-data": "^4.0.0",
+		"node-fetch": "^2.7.0",
+		"pdf-lib": "^1.17.1",
+		"pdfkit": "^0.14.0",
+		"puppeteer": "^22.6.0",
+		"puppeteer-extra": "^3.3.6",
+		"puppeteer-extra-plugin-stealth": "^2.11.2",
+		"timers-promises": "^1.0.1"
 	}
 }

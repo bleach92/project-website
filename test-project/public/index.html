@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Issac Sebastian - Portfolio Website</title>
+  <link rel="stylesheet" href="/styles/home.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Issac Sebastian</h1>
+    <h2>Combat Medic | IT Student | Training NCO</h2>
+  </header>
+  <main>
+    <section id="hero">
+      <img src="/data/me.webp" alt="Issac Sebastian">
+      <h3>Welcome to my portfolio website!</h3>
+      <p>I'm a combat medic in the army and studying IT. Check out my projects below!</p>
+    </section>
+    <div class="canvasdiv">
+        <canvas id="fractal-canvas"></canvas>
+    </div>
+    <section id="about">
+      <h2>About Me</h2>
+      <p>I'm passionate about technology and its potential to improve lives. As a combat medic, I've learned the value of efficiency and attention to detail. My IT studies complement my military experience, allowing me to approach challenges with a unique perspective. I'm dedicated to continuous learning and strive to make a positive impact through my work.</p>
+    </section>
+    <section id="projects">
+      <h2>Projects</h2>
+      <div class="project">
+        <img src="/data/project-1.jpg" alt="Project 1">
+        <h3>Constructed Travel Worksheet Generator</h3>
+        <p>This project is a Constructed Travel Worksheet (CTW) generator designed to streamline the process of creating travel documents for military personnel. It automates the creation of CTWs based on input data, reducing errors and saving time for administrative tasks.</p>
+        <p>Technologies Used: HTML, CSS, Node.js</p>
+        <a href="/ctw">View Project</a>
+      </div>
+    </section>
+    <section id="contact">
+      <h2>Contact Me</h2>
+      <form action="/send-email" method="POST">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+        <label for="message">Message:</label>
+        <textarea id="message" name="message" required></textarea>
+        <input type="submit" value="Submit">
+      </form>
+    </section>
+  </main>
+  <footer>
+    <p>&copy; 2024 Issac Sebastian. All Rights Reserved.</p>
+  </footer>
+  <script src="scripts/fractals.js"></script>
+</body>
+</html>
