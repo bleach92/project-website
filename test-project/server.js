@@ -70,12 +70,12 @@ async function scrapeFlightPrice(origin, destination, startDate, endDate, name) 
         // Wait for the element containing the flight price to be visible
         const priceElement = await page.waitForSelector('div .YMlIz.FpEdX.jLMuyc');
 
-        await page.screenshot({ path: __dirname + '/pdf/temp/' + getCurrentDate() + "_air.jpg"  });
+        await page.screenshot({ path: __dirname + '/pdf/temp/' + getCurrentDate() + "_air.jpg" });
 
         if (priceElement) {
 
             // Extracting the dollar amount using string manipulation
-            const priceText = await priceElement.evaluate(el => el.textContent); 
+            const priceText = await priceElement.evaluate(el => el.textContent);
             console.log(priceText);
             dollarAmount = parseInt(priceText.substring(1));
             console.log(dollarAmount);
@@ -97,68 +97,68 @@ async function scrapeRentalCars(origin, destination, startDate, endDate, name) {
         executablePath: '/usr/bin/google-chrome-stable',
     });
     const page = await browser.newPage();
-  
+
     try {
-      // Navigate to hertz's website
-      await page.goto('https://www.hertz.com/rentacar/reservation/');
-  
-      // Wait for the search form to load
-      await page.waitForSelector('#pickup-location');
+        // Navigate to hertz's website
+        await page.goto('https://www.hertz.com/rentacar/reservation/');
 
-      // Click on the "Same Location" checkbox
-      await page.evaluate(() => {
-        document.querySelector('#new-locSelect option:nth-child(2)').selected = true;
-      });
-  
-      // Input destination, start date, and end date
-      await page.type('#pickupLocation', origin);
-      //await page.type('#dropoffLocationTextBox', destination);
+        // Wait for the search form to load
+        await page.waitForSelector('#pickup-location');
+
+        // Click on the "Same Location" checkbox
+        await page.evaluate(() => {
+            document.querySelector('#new-locSelect option:nth-child(2)').selected = true;
+        });
+
+        // Input destination, start date, and end date
+        await page.type('#pickupLocation', origin);
+        //await page.type('#dropoffLocationTextBox', destination);
         // Change the inner HTML of a div within a div with id 'pickup-date-box'
-      await page.evaluate(() => {
-        const parentElement = document.getElementById('pickup-date-box');
-        if (parentElement) {
-        const innerDiv = parentElement.querySelector('div'); 
-        if (innerDiv) {
-            innerDiv.innerHTML = startDate;
-        } else {
-            console.error('No inner div found inside div with id "pickup-date-box"');
-        }
-        } else {
-        console.error('Element with id "pickup-date-box" not found');
-        }
-      });
+        await page.evaluate(() => {
+            const parentElement = document.getElementById('pickup-date-box');
+            if (parentElement) {
+                const innerDiv = parentElement.querySelector('div');
+                if (innerDiv) {
+                    innerDiv.innerHTML = startDate;
+                } else {
+                    console.error('No inner div found inside div with id "pickup-date-box"');
+                }
+            } else {
+                console.error('Element with id "pickup-date-box" not found');
+            }
+        });
 
-      await page.evaluate(() => {
-        const parentElement = document.getElementById('dropoff-date-box');
-        if (parentElement) {
-        const innerDiv = parentElement.querySelector('div'); 
-        if (innerDiv) {
-            innerDiv.innerHTML = endDate;
-        } else {
-            console.error('No inner div found inside div with id "pickup-date-box"');
-        }
-        } else {
-        console.error('Element with id "pickup-date-box" not found');
-        }
-      });
-      //await page.type('#pickup-date-box div', startDate); 
-      //await page.type('#dropoff-date-box div', endDate);
+        await page.evaluate(() => {
+            const parentElement = document.getElementById('dropoff-date-box');
+            if (parentElement) {
+                const innerDiv = parentElement.querySelector('div');
+                if (innerDiv) {
+                    innerDiv.innerHTML = endDate;
+                } else {
+                    console.error('No inner div found inside div with id "pickup-date-box"');
+                }
+            } else {
+                console.error('Element with id "pickup-date-box" not found');
+            }
+        });
+        //await page.type('#pickup-date-box div', startDate); 
+        //await page.type('#dropoff-date-box div', endDate);
 
-      // Click on the search button
-      await page.click('.res-submit');
+        // Click on the search button
+        await page.click('.res-submit');
 
-      await page.screenshot({ path: __dirname + '/pdf/temp/' + getCurrentDate() + "_rental"  });
+        await page.screenshot({ path: __dirname + '/pdf/temp/' + getCurrentDate() + "_rental" });
 
     } catch (error) {
-      console.error('Error scraping Hertz rental cars:', error);
-      return [];
+        console.error('Error scraping Hertz rental cars:', error);
+        return [];
     } finally {
-      await browser.close();
+        await browser.close();
     }
-  }
-  
+}
 
-  async function fillPdf(inputPdfPath, outputPdfPath, rentalPrice, name, origin, destination, startDate, endDate, miles) {
+
+async function fillPdf(inputPdfPath, outputPdfPath, rentalPrice, name, origin, destination, startDate, endDate, miles) {
     try {
         console.log("pdf time");
         const existingPdfBytes = fs.readFileSync(inputPdfPath);
@@ -207,7 +207,7 @@ async function scrapeRentalCars(origin, destination, startDate, endDate, name) {
         totalCostField.setText(String(rentalPrice + (0.625 * miles * 2) + ((endDate - startDate) / 3 * 20)));
 
         // Read the JPEG file
-        const jpegData = fs.readFileSync(__dirname + '/pdf/temp/' + getCurrentDate() + "_air.jpg" );
+        const jpegData = fs.readFileSync(__dirname + '/pdf/temp/' + getCurrentDate() + "_air.jpg");
         const jpegImage = await pdfDoc.embedJpg(jpegData);
         //console.log(jpegImage.width, jpegData.height, jpegData);
 
@@ -236,6 +236,7 @@ async function scrapeRentalCars(origin, destination, startDate, endDate, name) {
         console.error('Error:', error);
         throw error; // Re-throw error to indicate failure
     }
+
 }
 
 // Home page
@@ -255,11 +256,11 @@ app.use(bodyParser.json());
 app.post('/ctw', async (req, res) => {
     try {
         console.log(req.body);
-        
+
         const name = req.body.name;
         const origin = req.body.origin;
         const destination = req.body.destination;
-        const startDate = req.body. startDate;
+        const startDate = req.body.startDate;
         const endDate = req.body.endDate;
         const miles = req.body.miles;
         //const rentalPrice = 0; 
@@ -270,15 +271,25 @@ app.post('/ctw', async (req, res) => {
         // Scrape Rental
         //const rentalPrice = await scrapeRentalCars(origin, destination, startDate, endDate, name);
 
+        const outputPdfPath = __dirname + `/pdf/completed/${name}_${getCurrentDate()}.pdf`;
         // Generating PDF
-        const pdf = await fillPdf(__dirname + '/pdf/CTW.pdf', __dirname + `/pdf/completed/${name}_${getCurrentDate()}`, flightPrice, name, origin, destination, startDate, endDate, miles);
+        await fillPdf(__dirname + '/pdf/CTW.pdf', outputPdfPath, flightPrice, name, origin, destination, startDate, endDate, miles);
 
-        // Set response headers for PDF file
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'attachment; filename=' + name + '_' + getCurrentDate() + '.pdf');
+        fs.readFile(outputPdfPath, (err, data) => {
+            if (err) {
+                // Handle error
+                console.error(err);
+                res.status(500).send('Error occurred while reading PDF file.');
+                return;
+            }
 
-        // Send the PDF file as response
-        res.send(__dirname + `/pdf/completed/${name}_${getCurrentDate()}`);
+            // Set response headers for PDF file
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'attachment; filename=' + name + '_' + getCurrentDate() + '.pdf');
+
+            // Send the PDF file as response
+            res.send(data);
+        });
 
     } catch (error) {
         console.error('Error:', error);
