@@ -63,6 +63,8 @@ function calculateDistanceInMiles(lat1, lon1, lat2, lon2) {
 async function scrapeFlightPrice(origin, destination, startDate, endDate, name) {
     const browser = await puppeteer.launch({
         executablePath: '/usr/bin/google-chrome-stable',
+        headless: true, // Run in headless mode
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     const page = await browser.newPage();
     try {
@@ -75,7 +77,7 @@ async function scrapeFlightPrice(origin, destination, startDate, endDate, name) 
         console.log(url);
         await page.goto(url, { waitUntil: 'networkidle2' });
 
-        await page.screenshot({ path: __dirname + '/pdf/temp/' + getCurrentDate() + "_air.jpg" });
+        await page.screenshot({ path: __dirname + '/pdf/temp/air.jpg' });
 
         // Wait for the element containing the flight price to be visible
         const priceElement = await page.waitForSelector('div .YMlIz.FpEdX.jLMuyc');
@@ -103,35 +105,37 @@ async function scrapeFlightPrice(origin, destination, startDate, endDate, name) 
 async function scrapeRentalCars(origin, destination, startDate, endDate) {
     const browser = await puppeteer.launch({
         executablePath: '/usr/bin/google-chrome-stable',
+        headless: true, // Run in headless mode
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     const page = await browser.newPage();
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36');
 
     try {
         // Navigate to Costco's website
-        await page.goto('https://www.costcotravel.com/h=4005', { waitUntil: 'networkidle2', timeout: 60000 });
-
-        await page.screenshot({ path: __dirname + '/pdf/temp/' + getCurrentDate() + "_rental.jpg" });
+        await page.goto('https://www.costcotravel.com/h=4005', { waitUntil: 'networkidle2', timeout: 30000 });
 
         // Wait for the search form to load
-        //await page.waitForSelector('#rental-cars-tab-id');
-        //await page.click('#rental-cars-tab-id');
+        await page.waitForSelector('#rental-cars-tab-id');
+        await page.click('#rental-cars-tab-id');
 
         // Click on the "Same Location" checkbox
         await page.waitForSelector('#dropOfDifferentLocation');
         await page.click('#dropOfDifferentLocation');
 
-
         // Input destination, start date, and end date
-        await page.type('pickupLocationTextWidget', origin);
-        await page.type('dropoffLocationTextWidget', destination);
-        await page.type('pickUpDateWidget', formatDate(startDate));
-        await page.type('dropOffDateWidget',  formatDate(endDate));
+        await page.type('#pickupLocationTextWidget', origin);
+        await page.mouse.click(0, 200);
+        await page.type('#dropoffLocationTextWidget', destination);
+        await page.mouse.click(0, 200);
+        await page.type('#pickUpDateWidget', formatDate(startDate));
+        await page.type('#dropOffDateWidget',  formatDate(endDate));
         
 
         // Click on the search button
         await page.click('#findMyCarButton');
 
-        await page.screenshot({ path: __dirname + '/pdf/temp/' + getCurrentDate() + "_rental.jpg" });
+        await page.screenshot({ path: __dirname + '/pdf/temp/rental.jpg' });
 
     } catch (error) {
         console.error('Error scraping rental cars:', error);
@@ -191,7 +195,7 @@ async function fillPdf(inputPdfPath, outputPdfPath, rentalPrice, name, origin, d
         totalCostField.setText(String(rentalPrice + (0.625 * miles * 2) + ((endDate - startDate) / 3 * 20)));
 
         // Read the JPEG file
-        const jpegData = fs.readFileSync(__dirname + '/pdf/temp/' + getCurrentDate() + "_air.jpg");
+        const jpegData = fs.readFileSync(__dirname + '/pdf/temp/air.jpg');
         const jpegImage = await pdfDoc.embedJpg(jpegData);
         //console.log(jpegImage.width, jpegData.height, jpegData);
 
@@ -209,7 +213,7 @@ async function fillPdf(inputPdfPath, outputPdfPath, rentalPrice, name, origin, d
         });
 
         // Read the JPEG file for Rental
-        const jpegDataRental = fs.readFileSync(__dirname + '/pdf/temp/' + getCurrentDate() + "_rental.jpg");
+        const jpegDataRental = fs.readFileSync(__dirname + '/pdf/temp/rental.jpg');
         const jpegImageRental = await pdfDoc.embedJpg(jpegDataRental);
 
         // Add the JPEG image as a page in the PDF document [jpegImage.width, jpegImage.height]
