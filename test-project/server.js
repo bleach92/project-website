@@ -19,6 +19,14 @@ function getCurrentDate() {
     return `${year}-${month}-${day}`;
 }
 
+function formatDate(dateString) {
+    const parts = dateString.split('-');
+    const month = parts[1];
+    const day = parts[2];
+    const year = parts[0];
+    return month + day + year;
+}
+
 async function getCoordinates(city) {
     const apiKey = '130a7b0e18ec45ee884b910adc14625d';
     const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(city)}&key=${apiKey}&limit=1`;
@@ -67,10 +75,10 @@ async function scrapeFlightPrice(origin, destination, startDate, endDate, name) 
         console.log(url);
         await page.goto(url, { waitUntil: 'networkidle2' });
 
+        await page.screenshot({ path: __dirname + '/pdf/temp/' + getCurrentDate() + "_air.jpg" });
+
         // Wait for the element containing the flight price to be visible
         const priceElement = await page.waitForSelector('div .YMlIz.FpEdX.jLMuyc');
-
-        await page.screenshot({ path: __dirname + '/pdf/temp/' + getCurrentDate() + "_air.jpg" });
 
         if (priceElement) {
 
@@ -92,65 +100,41 @@ async function scrapeFlightPrice(origin, destination, startDate, endDate, name) 
     }
 }
 
-async function scrapeRentalCars(origin, destination, startDate, endDate, name) {
+async function scrapeRentalCars(origin, destination, startDate, endDate) {
     const browser = await puppeteer.launch({
         executablePath: '/usr/bin/google-chrome-stable',
     });
     const page = await browser.newPage();
 
     try {
-        // Navigate to hertz's website
-        await page.goto('https://www.hertz.com/rentacar/reservation/');
+        // Navigate to Costco's website
+        await page.goto('https://www.costcotravel.com/h=4005', { waitUntil: 'networkidle2', timeout: 60000 });
+
+        await page.screenshot({ path: __dirname + '/pdf/temp/' + getCurrentDate() + "_rental.jpg" });
 
         // Wait for the search form to load
-        await page.waitForSelector('#pickup-location');
+        //await page.waitForSelector('#rental-cars-tab-id');
+        //await page.click('#rental-cars-tab-id');
 
         // Click on the "Same Location" checkbox
-        await page.evaluate(() => {
-            document.querySelector('#new-locSelect option:nth-child(2)').selected = true;
-        });
+        await page.waitForSelector('#dropOfDifferentLocation');
+        await page.click('#dropOfDifferentLocation');
+
 
         // Input destination, start date, and end date
-        await page.type('#pickupLocation', origin);
-        //await page.type('#dropoffLocationTextBox', destination);
-        // Change the inner HTML of a div within a div with id 'pickup-date-box'
-        await page.evaluate(() => {
-            const parentElement = document.getElementById('pickup-date-box');
-            if (parentElement) {
-                const innerDiv = parentElement.querySelector('div');
-                if (innerDiv) {
-                    innerDiv.innerHTML = startDate;
-                } else {
-                    console.error('No inner div found inside div with id "pickup-date-box"');
-                }
-            } else {
-                console.error('Element with id "pickup-date-box" not found');
-            }
-        });
-
-        await page.evaluate(() => {
-            const parentElement = document.getElementById('dropoff-date-box');
-            if (parentElement) {
-                const innerDiv = parentElement.querySelector('div');
-                if (innerDiv) {
-                    innerDiv.innerHTML = endDate;
-                } else {
-                    console.error('No inner div found inside div with id "pickup-date-box"');
-                }
-            } else {
-                console.error('Element with id "pickup-date-box" not found');
-            }
-        });
-        //await page.type('#pickup-date-box div', startDate); 
-        //await page.type('#dropoff-date-box div', endDate);
+        await page.type('pickupLocationTextWidget', origin);
+        await page.type('dropoffLocationTextWidget', destination);
+        await page.type('pickUpDateWidget', formatDate(startDate));
+        await page.type('dropOffDateWidget',  formatDate(endDate));
+        
 
         // Click on the search button
-        await page.click('.res-submit');
+        await page.click('#findMyCarButton');
 
-        await page.screenshot({ path: __dirname + '/pdf/temp/' + getCurrentDate() + "_rental" });
+        await page.screenshot({ path: __dirname + '/pdf/temp/' + getCurrentDate() + "_rental.jpg" });
 
     } catch (error) {
-        console.error('Error scraping Hertz rental cars:', error);
+        console.error('Error scraping rental cars:', error);
         return [];
     } finally {
         await browser.close();
@@ -218,11 +202,28 @@ async function fillPdf(inputPdfPath, outputPdfPath, rentalPrice, name, origin, d
         console.log(width, height);
 
         jpegPage.drawImage(jpegImage, {
-            x: jpegPage.getWidth() / 2,
-            y: jpegPage.getHeight() / 2,
-            //width: jpegImage.width,
-            //height: jpegImage.height,
+            x: 0,//jpegPage.getWidth() / 2,
+            y: 0,//jpegPage.getHeight() / 2,
+            width: jpegPage.getWidth(),
+            height: jpegPage.getHeight()
         });
+
+        // Read the JPEG file for Rental
+        const jpegDataRental = fs.readFileSync(__dirname + '/pdf/temp/' + getCurrentDate() + "_rental.jpg");
+        const jpegImageRental = await pdfDoc.embedJpg(jpegDataRental);
+
+        // Add the JPEG image as a page in the PDF document [jpegImage.width, jpegImage.height]
+        const jpegPageRental = pdfDoc.addPage();
+
+        const { widthRental, heightRental } = jpegImageRental.scale(1);
+
+        jpegPageRental.drawImage(jpegImageRental, {
+            x: 0,//jpegPage.getWidth() / 2,
+            y: 0,//jpegPage.getHeight() / 2,
+            width: jpegPageRental.getWidth(),
+            height: jpegPageRental.getHeight()
+        });
+
 
         const pdfBytes = await pdfDoc.save();
 
@@ -269,7 +270,7 @@ app.post('/ctw', async (req, res) => {
         const flightPrice = await scrapeFlightPrice(querystring.escape(origin), querystring.escape(destination), querystring.escape(startDate), querystring.escape(endDate), name);
 
         // Scrape Rental
-        //const rentalPrice = await scrapeRentalCars(origin, destination, startDate, endDate, name);
+        const rentalPrice = await scrapeRentalCars(origin, destination, startDate, endDate);
 
         const outputPdfPath = __dirname + `/pdf/completed/${name}_${getCurrentDate()}.pdf`;
         // Generating PDF
