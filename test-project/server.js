@@ -6,6 +6,7 @@ const { componentsToColor } = require('pdf-lib');
 const { PDFDocument, rgb } = require('pdf-lib');
 const fs = require('fs');
 const fetch = require('node-fetch');
+const { Queue } = require('queue-typescript');
 
 const app = express();
 app.use(express.json());
@@ -80,13 +81,11 @@ async function scrapeFlightPrice(origin, destination, startDate, endDate, name) 
         await page.screenshot({ path: __dirname + '/pdf/temp/air.jpg' });
 
         // Wait for the element containing the flight price to be visible
-        const priceElement = await page.waitForSelector('div .YMlIz.FpEdX.jLMuyc');
+        const priceElement = await page.waitForSelector('div .YMlIz.FpEdX.jLMuyc', { timeout: 5000 }).catch(() => null);
 
         if (priceElement) {
-
             // Extracting the dollar amount using string manipulation
             const priceText = await priceElement.evaluate(el => el.textContent);
-            console.log(priceText);
             dollarAmount = parseInt(priceText.substring(1));
             console.log(dollarAmount);
             return dollarAmount;
@@ -96,7 +95,7 @@ async function scrapeFlightPrice(origin, destination, startDate, endDate, name) 
 
     } catch (error) {
         console.error('Error scraping flight price:', error);
-        return null;
+        return 0;
     } finally {
         await browser.close();
     }
@@ -139,7 +138,7 @@ async function scrapeRentalCars(origin, destination, startDate, endDate) {
 
     } catch (error) {
         console.error('Error scraping rental cars:', error);
-        return [];
+        return 0;
     } finally {
         await browser.close();
     }
@@ -244,21 +243,30 @@ async function fillPdf(inputPdfPath, outputPdfPath, rentalPrice, name, origin, d
 
 }
 
-// Home page
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/public/index.html');
-});
+// Initialize queue and status variables
+const requestQueue = new Queue();
+let isProcessing = false;
 
-// CTW Generator page
-app.get('/ctw', (req, res) => {
-    res.sendFile(__dirname + '/public/ctw.html');
-});
+const SSE_RESPONSE_HEADER = {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    "Connection": "keep-alive"
+};
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+//Process Requests
+async function processRequest(req, res) {
+    // Lock to ensure only one request is processed at a time
+    if (isProcessing) {
+        requestQueue.enqueue({ req, res });
+        // Send the position of the request in the queue along with the total number of requests
+        const position = requestQueue.length;
+        res.status(200).json({ position, total: position + 1 });
+        return;
+    }
 
-// Handle search form submission
-app.post('/ctw', async (req, res) => {
+    isProcessing = true;
+
+    // Process the request
     try {
         console.log(req.body);
 
@@ -268,18 +276,24 @@ app.post('/ctw', async (req, res) => {
         const startDate = req.body.startDate;
         const endDate = req.body.endDate;
         const miles = req.body.miles;
-        //const rentalPrice = 0; 
+
+        // Send initial processing status
+        //res.status(200).json({ status: "Processing request" });
 
         // Scraping flight price
         const flightPrice = await scrapeFlightPrice(querystring.escape(origin), querystring.escape(destination), querystring.escape(startDate), querystring.escape(endDate), name);
+        //res.status(200).json({ status: "Got flight price: " + flightPrice });
 
         // Scrape Rental
         const rentalPrice = await scrapeRentalCars(origin, destination, startDate, endDate);
+        //res.status(200).json({ status: "Got rental price: " + rentalPrice });
 
         const outputPdfPath = __dirname + `/pdf/completed/${name}_${getCurrentDate()}.pdf`;
         // Generating PDF
+        //res.status(200).json({ status: "Generating CTW" });
         await fillPdf(__dirname + '/pdf/CTW.pdf', outputPdfPath, flightPrice, name, origin, destination, startDate, endDate, miles);
 
+        // Read and send the generated PDF file
         fs.readFile(outputPdfPath, (err, data) => {
             if (err) {
                 // Handle error
@@ -295,11 +309,41 @@ app.post('/ctw', async (req, res) => {
             // Send the PDF file as response
             res.send(data);
         });
-
     } catch (error) {
-        console.error('Error:', error);
-        res.status(500).send('Internal Server Error');
+        console.error('Error processing request:', error);
+        res.status(500).json({ status: 'Failed', error: error.message });
+
+        // If an error occurs, send an empty response to prevent hanging
+        res.end();
+    } finally {
+        isProcessing = false;
+
+        // Process the next request in the queue, if any
+        if (!requestQueue.length === 0) {
+            const nextRequest = requestQueue.dequeue();
+            processRequest(nextRequest.req, nextRequest.res);
+        }
     }
+}
+
+
+
+// Home page
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/public/index.html');
+});
+
+// CTW Generator page
+app.get('/ctw', (req, res) => {
+    res.sendFile(__dirname + '/public/ctw.html');
+});
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+// Handle search form submission
+app.post('/ctw', async (req, res) => {
+    processRequest(req, res);
 });
 
 app.listen(3000, () => {

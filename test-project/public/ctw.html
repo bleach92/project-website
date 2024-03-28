@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search</title>
-   <!-- <link rel="stylesheet" href="styles/home.css"> --> 
+    <title>CTW Generator</title>
     <link rel="stylesheet" href="styles/ctw.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 </head>
 <body>
     <header>
@@ -17,22 +15,34 @@
         <h1>CTW Generator</h1>
     </header>
     <main>
-        <form action="/ctw" method="post">
-            <label for="startDate">Start Date:</label>
-            <input type="date" id="startDate" name="startDate" required><br><br>
-            <label for="endDate">End Date:</label>
-            <input type="date" id="endDate" name="endDate" required><br><br>
-            <label for="origin">From:</label>
-            <input type="text" id="origin" name="origin" class="cityStateInput" required><br><br>
-            <label for="destination">To:</label>
-            <input type="text" id="destination" name="destination" class="cityStateInput" required><br><br>
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name" required><br><br>
-            <label for="miles">Miles to airport:</label>
-            <input type="number" id="miles" name="miles" required><br><br>
-            <button type="submit">Search</button>
-        </form>
+        <main>
+            <form action="/ctw" method="post" id="searchForm">
+                <label for="startDate">Start Date:</label>
+                <input type="date" id="startDate" name="startDate" required><br><br>
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate" name="endDate" required><br><br>
+                <label for="origin">From:</label>
+                <input type="text" id="origin" name="origin" class="cityStateInput" required><br><br>
+                <label for="destination">To:</label>
+                <input type="text" id="destination" name="destination" class="cityStateInput" required><br><br>
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required><br><br>
+                <label for="miles">Miles to airport:</label>
+                <input type="number" id="miles" name="miles" required><br><br>
+                <button type="submit">Generate</button>
+            </form>
     </main>
-    <!-- <script src="scripts/complete.js"></script> -->
+
+    <!-- Popup overlay -->
+    <div id="popupOverlay" class="overlay">
+        <div class="popup">
+            <img src="data/loading.gif"><br>
+            <span id="popupText">Processing...</span>
+            <div id="processingStatus"></div> <!-- Display processing status here -->
+            <div id="queueStatus"></div> <!-- Display queue status here -->
+        </div>
+    </div>
+
+    <script src="scripts/ctw.js"></script>
 </body>
 </html>
