@@ -37,6 +37,3 @@ After installing the dependencies, run:
 ```
 npm start
 ```
-
-Or just press the *Run Code* button found in the top right of the editor panel.
-### Want to contribute?
